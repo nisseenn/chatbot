@@ -17,6 +17,7 @@ function App() {
     .then(res => {
       if(res.status === 200){
           console.log(res.data.message)
+          addResponseMessage(res.data.message)
       }
     })
     .catch(err => {
