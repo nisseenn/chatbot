@@ -1,29 +1,45 @@
-import React, { useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { MessageList } from 'react-chat-elements'
 import { Widget, addResponseMessage } from 'react-chat-widget';
+import socketIOClient from "socket.io-client";
 import axios from "axios"
+
 import './App.css';
 
 import 'react-chat-widget/lib/styles.css';
 
 let FLASK_URL = "http://localhost:5000"
+let socket = socketIOClient.connect(`${FLASK_URL}`);
 
 function App() {
 
+  const [messages, setMessages] = useState([]);
+
+  useEffect(() => {
+    getMessages();
+  }, []);
+
   const handleMakeAPICall = (newMessage) => {
-    axios.post(FLASK_URL+"/submit_text", {
-      message: newMessage
-    })
-    .then(res => {
-      if(res.status === 200){
-          console.log(res.data.message)
-          addResponseMessage(res.data.message)
-      }
-    })
-    .catch(err => {
-      console.log('err: ' + err.message)
-    })
+    socket.emit("message", newMessage);
+    // axios.post(FLASK_URL+"/submit_text", {
+    //   message: newMessage
+    // })
+    // .then(res => {
+    //   if(res.status === 200){
+    //       console.log(res.data.message)
+    //       addResponseMessage(res.data.message)
+    //   }
+    // })
+    // .catch(err => {
+    //   console.log('err: ' + err.message)
+    // })
   }
+
+  const getMessages = () => {
+    socket.on("message", msg => {
+      addResponseMessage(msg)
+    });
+  };
 
   const handleNewUserMessage = (newMessage) => {
     //pushing the message to the backend
@@ -31,9 +47,13 @@ function App() {
     // Now send the message throught the backend API
   };
 
+  const initializeApp = async() => {
+    console.log('initialize app running')
+    addResponseMessage('Welcome, how can I help you?');
+  }
+
   useEffect(() => {
-    //Initial message sent to the user
-    addResponseMessage('Welcome, what is on your mind?');
+    initializeApp()
   }, []);
 
   return (
@@ -42,7 +62,7 @@ function App() {
       handleNewUserMessage={handleNewUserMessage}
       title="Chatoline"
       // fullScreenMode
-      subtitle="Ask me anything about ubuntu"
+      subtitle="Ask me anything about Lillehammer Kommune"
       />
     </div>
   );
