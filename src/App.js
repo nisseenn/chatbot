@@ -5,6 +5,7 @@ import socketIOClient from "socket.io-client";
 import axios from "axios"
 
 import './App.css';
+import avatar from './avatar.jpeg'
 
 import 'react-chat-widget/lib/styles.css';
 
@@ -12,8 +13,6 @@ let FLASK_URL = "http://localhost:5000"
 let socket = socketIOClient.connect(`${FLASK_URL}`);
 
 function App() {
-
-  const [messages, setMessages] = useState([]);
 
   useEffect(() => {
     getMessages();
@@ -35,18 +34,22 @@ function App() {
     // })
   }
 
+  //The function to trigger when new message comes inn. Triggered in the useEffect method.
   const getMessages = () => {
     socket.on("message", msg => {
+      //Adding the response from the chatbot to the UI
       addResponseMessage(msg)
     });
   };
 
+  //The function for when the user submit new message.
   const handleNewUserMessage = (newMessage) => {
     //pushing the message to the backend
     handleMakeAPICall(newMessage)
     // Now send the message throught the backend API
   };
 
+  //The function for the initial messagge. Triggered in the useEffect below.
   const initializeApp = async() => {
     console.log('initialize app running')
     addResponseMessage('Welcome, how can I help you?');
@@ -60,9 +63,10 @@ function App() {
     <div className="App">
       <Widget
       handleNewUserMessage={handleNewUserMessage}
-      title="Chatoline"
-      // fullScreenMode
-      subtitle="Ask me anything about Lillehammer Kommune"
+      title="Municipality-Mia"
+      profileAvatar={avatar}
+      subtitle=""
+      emojis={true}
       />
     </div>
   );
