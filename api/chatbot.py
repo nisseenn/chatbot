@@ -1,6 +1,6 @@
 from chatterbot import ChatBot
 from chatterbot.trainers import ChatterBotCorpusTrainer
 
-chatbot = ChatBot("Chatoline")
+chatbot2 = ChatBot("Mia")
 
 

@@ -2,7 +2,7 @@ from flask import Flask, request
 from flask_cors import CORS
 from flask_restful import Api, Resource, reqparse
 import re
-from chatbot import chatbot
+from chatbot import chatbot2
 from flask_socketio import SocketIO, send
 # import spacy
 # from spacy import displacy
@@ -24,7 +24,7 @@ socketIo = SocketIO(app, cors_allowed_origins="*")
 @socketIo.on('message')
 def handle_message(data):
     print('received message: ' + data)
-    response = chatbot.get_response(data)
+    response = chatbot2.get_response(data)
     final = response.serialize()["text"]
     send(final, broadcast=False)
     return None
@@ -32,7 +32,7 @@ def handle_message(data):
 @app.route('/submit_text', methods=['POST'])
 def checkText():
     text = request.get_json()['message']
-    response = chatbot.get_response(text)
+    response = chatbot2.get_response(text)
     final = response.serialize()["text"]
     
     # doc = nlp(text)

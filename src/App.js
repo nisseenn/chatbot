@@ -6,6 +6,7 @@ import axios from "axios"
 
 import './App.css';
 import avatar from './avatar.jpeg'
+import avatar2 from './avatar2.png'
 
 import 'react-chat-widget/lib/styles.css';
 
@@ -22,7 +23,7 @@ function App() {
     socket.emit("message", newMessage);
     // axios.post(FLASK_URL+"/submit_text", {
     //   message: newMessage
-    // })
+    // }) 
     // .then(res => {
     //   if(res.status === 200){
     //       console.log(res.data.message)
@@ -61,10 +62,11 @@ function App() {
 
   return (
     <div className="App">
+      <p className="websiteTitle">Lillehammer Municipality website</p>
       <Widget
       handleNewUserMessage={handleNewUserMessage}
       title="Municipality-Mia"
-      profileAvatar={avatar}
+      profileAvatar={avatar2}
       subtitle=""
       emojis={true}
       />
