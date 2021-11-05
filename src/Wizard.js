@@ -1,10 +1,13 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Outlet, Link } from "react-router-dom";
 import { MdOutlineArrowBackIos } from 'react-icons/md';
 import { AiOutlineUpload } from 'react-icons/ai';
 import Typography from "@material-ui/core/Typography";
 import { TextField, Button, FormControl, Select, MenuItem, InputLabel, FormHelperText } from "@material-ui/core";
 import Slide from '@material-ui/core/Slide';
+import CircularProgress from '@material-ui/core/CircularProgress';
+import Alert from '@mui/material/Alert';
+import axios from 'axios'
 
 import avatar_female from './assets/avatar_female.png'
 import avatar_male from './assets/avatar_male.jpeg'
@@ -23,13 +26,18 @@ const defaultStyle = {
   opacity: 0,
 }
 
+let FLASK_URL = "http://localhost:5000"
+
 const Wizard = () => {
+
+    const hiddenInput = useRef()
 
     const [avatarName, setAvatarName] = useState('')
     const [gender, setGender] = useState('')
     const [avatar, setAvatar] = useState('')
     const [initialStep, setInitialStep] = useState(true)
     const [secondStep, setSecondStep] = useState(false)
+    const [showAlert, setShowAlert] = useState(false)
 
     const [firstSlide, setFirstSlide] = useState('left')
     const [secondSlide, setSecondSlide] = useState('left')
@@ -37,6 +45,7 @@ const Wizard = () => {
     const [selectedFile, setSelectedFile] = useState();
 	const [isFilePicked, setIsFilePicked] = useState(false);
     const [changeColor, setChangeColor] = useState(false)
+    const [isUploading, setIsUploading] = useState(false)
     
     const handleChange = (event) => {
         setGender(event.target.value);
@@ -68,12 +77,35 @@ const Wizard = () => {
     }
 
     const handleUploadFile = () => {
-      
+        hiddenInput.current.click();
     }
 
     const changeHandler = (event) => {
-		setSelectedFile(event.target.files[0]);
-		setIsFilePicked(true);
+        setIsUploading(true)
+        const fileExtention = event.target.files[0].type
+        const fileName = event.target.files[0].name
+        if(fileExtention === "application/x-yaml"){
+            event.preventDefault();
+            const formData = new FormData();
+            formData.append("file", event.target.files[0]);
+            formData.append("filename", fileName)
+
+            axios
+            .post(FLASK_URL+"/submit_file", formData)
+            .then(res => {
+                if(res.status === 200){
+                    console.log(res)
+                    setIsFilePicked(true);
+                    setIsUploading(false)
+                }
+            })
+            .catch(err => {
+                console.log(err)
+            });
+        }else{            
+            setShowAlert(true)
+            setIsUploading(false)
+        }
 	};
 
     return (
@@ -91,12 +123,7 @@ const Wizard = () => {
             zIndex: 1000,
             flexDirection: 'row',
             }}>
-                                {/* <div style={{ display: 'inline-block' }}>
-                        <div onMouseLeave={() => setCursor("auto")} onMouseEnter={() => setCursor("pointer")}  style={{display: 'flex', alignItems: 'center', cursor: cursor }}>
-                            <MdOutlineArrowBackIos style={{ marginRight: 5 }} size="1vw" />
-                            <Link style={{ textDecorationLine: 'none', fontFamily: 'sans-serif', fontSize: '1vw', color: "#000" }} to="/"><Typography variant="p">Go to chatbot</Typography></Link>{" "}
-                        </div>
-                    </div> */}
+
             <Slide direction={firstSlide} in={initialStep}>
                 <div style={{ flex: 1, flexDirection: 'row', display: 'flex' }}>
                     <div key="transition-group-content" style={{ flex: 1, alignItems: 'center', display: 'flex', flexDirection: 'column', justifyContent: 'center'}}>
@@ -150,7 +177,7 @@ const Wizard = () => {
                             <img style={{ width: '10vw', height: '10vw', borderRadius: 300 }} src={avatar_nogender} alt="Logo" />
                         )}
                         {avatarName.length > 0 ? (
-                            <Typography style={{ marginTop: 30 }} variant="h4">{avatarName}</Typography>
+                            <Typography style={{ marginTop: 30 }} variant="h5">{avatarName}</Typography>
                         ) : (
                             <Typography style={{ marginTop: 30 }} variant="h5">No name chosen</Typography>
                         )}
@@ -166,11 +193,28 @@ const Wizard = () => {
                             </Button>
                         </div>
                         <div style={{ width: '50vw', height: '50vh', justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
+                            
+                            {showAlert ? (
+                                <Alert style={{ position: 'absolute', top: 0 }} onClose={() => setShowAlert(false)} severity="error">The file format needs to be .yml</Alert>
+                            ) : (
+                                <div />
+                            )}
+
                             <Typography style={{ }} variant="h5">Upload semantic model</Typography>
                             <Button onMouseEnter={() => setChangeColor(true)} onMouseLeave={() => setChangeColor(false)} style={changeColor ? { marginTop: '2vw', backgroundColor: "#68a4ff", padding: '2vw', borderRadius: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' } : { marginTop: '2vw', backgroundColor: "#eaeaea", padding: '2vw', borderRadius: 300, display: 'flex', alignItems: 'center', justifyContent: 'center' }} onClick={handleUploadFile}>
-                                    <AiOutlineUpload style={changeColor ? { color: "#FFF"} : {color: "#000"}} size="3vw" />
+                                    {isUploading ? (
+                                        <CircularProgress size="3vw" style={{ position: 'absolute' }} />
+                                    ) : (
+                                        <AiOutlineUpload style={changeColor ? { color: "#FFF"} : {color: "#000"}} size="3vw" />
+                                    )}
                             </Button>
-                            <input type="file" name="file" onChange={changeHandler} />
+                            <input 
+                            ref={hiddenInput} 
+                            type="file" 
+                            name="file" 
+                            style={{display: 'none'}} 
+                            onChange={changeHandler} />
+                            
                         </div>
                     </div>
             </Slide>

@@ -1,3 +1,4 @@
+import os
 from flask import Flask, request
 from flask_cors import CORS
 from flask_restful import Api, Resource, reqparse
@@ -48,6 +49,18 @@ def checkText():
 			# MONEY_named_entity = df.loc[df['named entity'] == 'MONEY']['output']
 
     return { 'message': final }
+
+@app.route('/submit_file', methods=['POST'])
+def checkFile():
+    file = request.files['file']
+
+    # target=os.path.join(UPLOAD_FOLDER,'uploaded_files')
+    # if not os.path.isdir(target):
+    #     os.mkdir(target)
+    # destination="/".join([target, request.files['filename']])
+    # file.save(destination)
+
+    return 'success'
 
 if __name__ == '__main__':
     socketIo.run(app)
