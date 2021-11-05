@@ -6,8 +6,8 @@ import axios from "axios"
 import { BrowserRouter, Link } from "react-router-dom";
 
 import './App.css';
-import avatar from './avatar.jpeg'
-import avatar2 from './avatar2.png'
+import avatar_female from './assets/avatar_female.png'
+import avatar_male from './assets/avatar_male.jpeg'
 
 import 'react-chat-widget/lib/styles.css';
 
@@ -54,7 +54,7 @@ const Chat = (props) => {
             <Widget
             handleNewUserMessage={handleNewUserMessage}
             title="Municipality-Mia"
-            profileAvatar={avatar2}
+            profileAvatar={avatar_female}
             subtitle=""
             emojis={true}
             />
