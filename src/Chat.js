@@ -1,13 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { MessageList } from 'react-chat-elements'
+import React, { useEffect } from 'react';
 import { Widget, addResponseMessage } from 'react-chat-widget';
 import socketIOClient from "socket.io-client";
-import axios from "axios"
-import { BrowserRouter, Link } from "react-router-dom";
 
 import './App.css';
 import avatar_female from './assets/avatar_female.png'
-import avatar_male from './assets/avatar_male.jpeg'
 
 import 'react-chat-widget/lib/styles.css';
 

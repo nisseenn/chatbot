@@ -1,10 +1,12 @@
-import os
-from flask import Flask, request
-from flask_cors import CORS
+from os import walk
+from flask import Flask, request, session
+from flask_cors import CORS, cross_origin
 from flask_restful import Api, Resource, reqparse
 import re
-from chatbot import chatbot2
+# from chatbot import chatbot2
 from flask_socketio import SocketIO, send
+from chatterbot import ChatBot
+from chatterbot.trainers import ChatterBotCorpusTrainer
 # import spacy
 # from spacy import displacy
 # nlp = spacy.load("en_core_web_sm")
@@ -19,8 +21,7 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
 socketIo = SocketIO(app, cors_allowed_origins="*")
-# CORS(app)
-
+CORS(app)
 
 @socketIo.on('message')
 def handle_message(data):
@@ -30,37 +31,47 @@ def handle_message(data):
     send(final, broadcast=False)
     return None
 
-@app.route('/submit_text', methods=['POST'])
-def checkText():
-    text = request.get_json()['message']
-    response = chatbot2.get_response(text)
-    final = response.serialize()["text"]
-    
-    # doc = nlp(text)
-    # d = []
-    # for token in doc:
-    #         print(token.text, token.lemma_, token.pos_, token.tag_, token.dep_,
-    #         token.shape_, token.is_alpha, token.is_stop)
-			# d.append((ent.label_, ent.text))
-			# df = pd.DataFrame(d, columns=('named entity', 'output'))
-			# ORG_named_entity = df.loc[df['named entity'] == 'ORG']['output']
-			# PERSON_named_entity = df.loc[df['named entity'] == 'PERSON']['output']
-			# GPE_named_entity = df.loc[df['named entity'] == 'GPE']['output']
-			# MONEY_named_entity = df.loc[df['named entity'] == 'MONEY']['output']
-
-    return { 'message': final }
-
 @app.route('/submit_file', methods=['POST'])
 def checkFile():
     file = request.files['file']
+    filename = file.filename
+    models_link = "/Users/alex/Documents/WebDev/chatbot/api/chatbotapi/lib/python3.7/site-packages/chatterbot_corpus/data/custom"
 
-    # target=os.path.join(UPLOAD_FOLDER,'uploaded_files')
-    # if not os.path.isdir(target):
-    #     os.mkdir(target)
-    # destination="/".join([target, request.files['filename']])
-    # file.save(destination)
+    destination="/".join([models_link, filename])
+    file.save(destination)
 
-    return 'success'
+    return { 'somereturnshit': 'success' }
+
+@app.route('/train_new_model', methods=['POST'])
+def trainModel():
+
+    models_link = "/Users/alex/Documents/WebDev/chatbot/api/chatbotapi/lib/python3.7/site-packages/chatterbot_corpus/data/custom"
+
+    name = request.get_json()['name']
+    chatbot = ChatBot(name)
+
+    trainer = ChatterBotCorpusTrainer(chatbot)
+
+    f = []
+    for (dirpath, dirnames, filenames) in walk(models_link):
+        f.extend(filenames)
+        break
+
+    newList = []
+    for file in f:
+        newFile = file.split(".")
+        fil = "chatterbot.corpus.custom." + newFile[0]
+        newList.append(fil)
+
+    # When creating own YAML files, put them in: chatbot/api/chatbotapi/lib/chatterbot_corpus/data/custom
+    trainer.train(
+        "chatterbot.corpus.english.greetings",
+        *newList
+    )
+
+    trainer.export_for_training(name + ".json")
+
+    return { 'somereturnshit': 'success' }
 
 if __name__ == '__main__':
     socketIo.run(app)

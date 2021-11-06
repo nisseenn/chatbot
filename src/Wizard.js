@@ -1,9 +1,8 @@
 import React, { useState, useRef } from 'react';
-import { Outlet, Link } from "react-router-dom";
 import { MdOutlineArrowBackIos } from 'react-icons/md';
 import { AiOutlineUpload } from 'react-icons/ai';
 import Typography from "@material-ui/core/Typography";
-import { TextField, Button, FormControl, Select, MenuItem, InputLabel, FormHelperText } from "@material-ui/core";
+import { TextField, Button, FormControl, Select, MenuItem, FormHelperText } from "@material-ui/core";
 import Slide from '@material-ui/core/Slide';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Alert from '@mui/material/Alert';
@@ -19,13 +18,6 @@ const Male = "Male"
 const Female = "Female"
 const No_gender = "No_gender"
 
-const duration = 300;
-
-const defaultStyle = {
-  transition: `opacity ${duration}ms ease-in-out`,
-  opacity: 0,
-}
-
 let FLASK_URL = "http://localhost:5000"
 
 const Wizard = () => {
@@ -35,17 +27,24 @@ const Wizard = () => {
     const [avatarName, setAvatarName] = useState('')
     const [gender, setGender] = useState('')
     const [avatar, setAvatar] = useState('')
+    const [showAlert, setShowAlert] = useState(false)
+    const [alertText, setAlertText] = useState('')
+    const [severity, setSeverity] = useState('')
+    
     const [initialStep, setInitialStep] = useState(true)
     const [secondStep, setSecondStep] = useState(false)
-    const [showAlert, setShowAlert] = useState(false)
-
+    const [thirdStep, setThirdStep] = useState(false)
+    const [fourStep, setFourStep] = useState(false)
     const [firstSlide, setFirstSlide] = useState('left')
     const [secondSlide, setSecondSlide] = useState('left')
+    const [thirdSlide, setThirdSlide] = useState('left')
+    const [fourSlide, setFourSlide] = useState('left')
 
     const [selectedFile, setSelectedFile] = useState();
 	const [isFilePicked, setIsFilePicked] = useState(false);
     const [changeColor, setChangeColor] = useState(false)
     const [isUploading, setIsUploading] = useState(false)
+    const [isDoneTraining, setIsDoneTraining] = useState(false)
     
     const handleChange = (event) => {
         setGender(event.target.value);
@@ -80,6 +79,25 @@ const Wizard = () => {
         hiddenInput.current.click();
     }
 
+    const handleTrainModel = () => {
+        setThirdSlide('left')
+        setSecondSlide('right')
+        setSecondStep(false)
+        setThirdStep(true)
+
+        axios.post(FLASK_URL+"/train_new_model", {
+            name: avatarName
+          })
+          .then(res => {
+            if(res.status === 200){
+                setIsDoneTraining(true)
+            }
+          })
+          .catch(err => {
+            console.log('err: ' + err.message)
+          })
+    }
+
     const changeHandler = (event) => {
         setIsUploading(true)
         const fileExtention = event.target.files[0].type
@@ -94,15 +112,25 @@ const Wizard = () => {
             .post(FLASK_URL+"/submit_file", formData)
             .then(res => {
                 if(res.status === 200){
-                    console.log(res)
                     setIsFilePicked(true);
-                    setIsUploading(false)
+                    setSeverity("success")
+                    setAlertText('File successfully uploaded!')
+                    setShowAlert(true)
+                    setTimeout(() => {
+                        setIsUploading(false)
+                        handleTrainModel()
+                    }, 2000);
                 }
             })
             .catch(err => {
-                console.log(err)
+                setSeverity("error")
+                setAlertText(`${err.message}`)
+                setShowAlert(true)
+                setIsUploading(false)
             });
         }else{            
+            setSeverity("error")
+            setAlertText("The file format needs to be .yml")
             setShowAlert(true)
             setIsUploading(false)
         }
@@ -195,7 +223,7 @@ const Wizard = () => {
                         <div style={{ width: '50vw', height: '50vh', justifyContent: 'center', alignItems: 'center', display: 'flex', flexDirection: 'column' }}>
                             
                             {showAlert ? (
-                                <Alert style={{ position: 'absolute', top: 0 }} onClose={() => setShowAlert(false)} severity="error">The file format needs to be .yml</Alert>
+                                <Alert style={{ position: 'absolute', top: 0 }} onClose={() => setShowAlert(false)} severity={severity}>{alertText}</Alert>
                             ) : (
                                 <div />
                             )}
@@ -218,6 +246,30 @@ const Wizard = () => {
                         </div>
                     </div>
             </Slide>
+            
+            <Slide direction={thirdSlide} in={thirdStep}>
+                <div style={{ position: 'absolute', zIndex: 100, width: '50vw', height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                    <Typography style={{ position: 'absolute', top: '15vh' }} variant="h4">We are getting things ready for you</Typography>
+                    <Typography style={{ }} variant="h5">Plase wait while {avatarName} is learning your semantic model.</Typography>
+                    <CircularProgress size="2vw" style={{ marginTop: '2vh' }} />
+                </div>
+            </Slide>
+
+            <Slide direction={fourSlide} in={fourStep}>
+                {isDoneTraining ? (
+                    <div style={{ position: 'absolute', zIndex: 100, width: '50vw', height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                        <Typography style={{ position: 'absolute', top: '15vh' }} variant="h4">{avatarName} is ready.</Typography>
+                        <Typography style={{ }} variant="h5">Try it out!</Typography>
+                    </div>
+                ) : (
+                <div style={{ position: 'absolute', zIndex: 100, width: '50vw', height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
+                    <Typography style={{ position: 'absolute', top: '15vh' }} variant="h4">We are getting things ready for you</Typography>
+                    <Typography style={{ }} variant="h5">Plase wait while {avatarName} is learning your semantic model.</Typography>
+                    <CircularProgress size="2vw" style={{ marginTop: '2vh' }} />
+                </div>
+                )}
+            </Slide>
+
             </div>
         </div>
     );
