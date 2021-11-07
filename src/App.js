@@ -10,8 +10,8 @@ function App() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/" element={<Chat />} />
-        <Route path="wizard" element={<Wizard />} />
+        <Route path="/" element={<Wizard />} />
+        <Route path="chat" element={<Chat />} />
       </Routes>
     </BrowserRouter>
   );

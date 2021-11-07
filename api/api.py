@@ -17,6 +17,8 @@ from chatterbot.trainers import ChatterBotCorpusTrainer
 #source chatbotapi/bin/activate
 #flask run
 
+chatbot = None
+
 app = Flask(__name__)
 app.config['SECRET_KEY'] = 'secret!'
 
@@ -26,7 +28,7 @@ CORS(app)
 @socketIo.on('message')
 def handle_message(data):
     print('received message: ' + data)
-    response = chatbot2.get_response(data)
+    response = chatbot.get_response(data)
     final = response.serialize()["text"]
     send(final, broadcast=False)
     return None
@@ -48,6 +50,7 @@ def trainModel():
     models_link = "/Users/alex/Documents/WebDev/chatbot/api/chatbotapi/lib/python3.7/site-packages/chatterbot_corpus/data/custom"
 
     name = request.get_json()['name']
+    global chatbot
     chatbot = ChatBot(name)
 
     trainer = ChatterBotCorpusTrainer(chatbot)

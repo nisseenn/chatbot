@@ -1,12 +1,14 @@
 import React, { useState, useRef } from 'react';
 import { MdOutlineArrowBackIos } from 'react-icons/md';
 import { AiOutlineUpload } from 'react-icons/ai';
+import { HiOutlineShieldCheck, HiOutlineChat } from 'react-icons/hi';
 import Typography from "@material-ui/core/Typography";
 import { TextField, Button, FormControl, Select, MenuItem, FormHelperText } from "@material-ui/core";
 import Slide from '@material-ui/core/Slide';
 import CircularProgress from '@material-ui/core/CircularProgress';
 import Alert from '@mui/material/Alert';
 import axios from 'axios'
+import { Link } from "react-router-dom";
 
 import avatar_female from './assets/avatar_female.png'
 import avatar_male from './assets/avatar_male.jpeg'
@@ -27,6 +29,7 @@ const Wizard = () => {
     const [avatarName, setAvatarName] = useState('')
     const [gender, setGender] = useState('')
     const [avatar, setAvatar] = useState('')
+    const [avatarType, setAvatarType] = useState('')
     const [showAlert, setShowAlert] = useState(false)
     const [alertText, setAlertText] = useState('')
     const [severity, setSeverity] = useState('')
@@ -49,10 +52,13 @@ const Wizard = () => {
     const handleChange = (event) => {
         setGender(event.target.value);
         if(event.target.value === Male){
+            setAvatarType(Male)
             setAvatar(avatar_male)
         }else if(event.target.value === Female){
+            setAvatarType(Female)
             setAvatar(avatar_female)
         }else if(event.target.value === No_gender){
+            setAvatarType(No_gender)
             setAvatar(avatar_nogender)
         }
     };
@@ -90,12 +96,19 @@ const Wizard = () => {
           })
           .then(res => {
             if(res.status === 200){
-                setIsDoneTraining(true)
+                setFourSlide('left')
+                setThirdSlide('right')
+                setThirdStep(false)
+                setFourStep(true)
             }
           })
           .catch(err => {
             console.log('err: ' + err.message)
           })
+    }
+
+    const handleGoToChat = () => {
+      
     }
 
     const changeHandler = (event) => {
@@ -242,7 +255,6 @@ const Wizard = () => {
                             name="file" 
                             style={{display: 'none'}} 
                             onChange={changeHandler} />
-                            
                         </div>
                     </div>
             </Slide>
@@ -256,18 +268,31 @@ const Wizard = () => {
             </Slide>
 
             <Slide direction={fourSlide} in={fourStep}>
-                {isDoneTraining ? (
-                    <div style={{ position: 'absolute', zIndex: 100, width: '50vw', height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                        <Typography style={{ position: 'absolute', top: '15vh' }} variant="h4">{avatarName} is ready.</Typography>
-                        <Typography style={{ }} variant="h5">Try it out!</Typography>
+                <div style={{ position: 'absolute', zIndex: 100, width: '50vw', height: '50vh', display: 'flex', flexDirection: 'row' }}>
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', alignItems: 'center'}}>
+                        <Typography style={{ marginBottom: '2vh' }} variant="h4">You are all set</Typography>
+                        <Typography style={{ marginBottom: '2vh' }} variant="h5">{avatarName} is ready to help your customers.</Typography>
+                        <HiOutlineShieldCheck style={{ color: "#4BB543" }} size="4vw" />
                     </div>
-                ) : (
-                <div style={{ position: 'absolute', zIndex: 100, width: '50vw', height: '50vh', display: 'flex', justifyContent: 'center', alignItems: 'center', flexDirection: 'column' }}>
-                    <Typography style={{ position: 'absolute', top: '15vh' }} variant="h4">We are getting things ready for you</Typography>
-                    <Typography style={{ }} variant="h5">Plase wait while {avatarName} is learning your semantic model.</Typography>
-                    <CircularProgress size="2vw" style={{ marginTop: '2vh' }} />
+                    <div style={{ display: 'flex', flexDirection: 'column', flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+                        {avatar ? (
+                            <img style={{ width: '10vw', height: '10vw', borderRadius: 300, marginBottom: '2vh' }} src={avatar} alt="Logo" />
+                        ) : (
+                            <img style={{ width: '10vw', height: '10vw', borderRadius: 300, marginBottom: '2vh' }} src={avatar_nogender} alt="Logo" />
+                        )}
+                        <Typography style={{ marginBottom: '2vh' }} variant="h5">Hi, I am {avatarName}</Typography>
+                        <Button variant="contained" style={{ backgroundColor: "#68a4ff", fontWeight: 'bold',  }} onClick={handleGoToChat}>
+                            <Link 
+                            style={{ textDecorationLine: 'none', color: "#FFF" }} 
+                            to={"/chat"}
+                            state={{ avatarName, avatarType }}
+                            >
+                            Chat with {avatarName}
+                            </Link>
+                            <HiOutlineChat style={{ color: "#FFF", marginLeft: '.5vw'}} size="1.5vw"/>
+                        </Button>
+                    </div>
                 </div>
-                )}
             </Slide>
 
             </div>
