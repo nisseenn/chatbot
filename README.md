@@ -1,5 +1,5 @@
 ## Chatbot app
-A school project to create a chatbot with the use of custom semantic models.
+A school project to create a chatbot with the use of custom semantic models, machine learning, React JS, Flask and Websockets.
 
 #### General architecture with WebSockets
 <img src="https://user-images.githubusercontent.com/20997734/143306426-a07c808c-e9ee-4703-bf77-6ff50e494547.png" width="80%" height="80%"> 
